@@ -1,0 +1,5 @@
+.idea/*
+RecursiveSwaggerSchemaParser.iml
+.gradle/*
+out/*
+build/*

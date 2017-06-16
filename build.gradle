@@ -1,0 +1,23 @@
+group 'com.thoughtworks.swagger.parser'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+repositories {
+    jcenter()
+    maven {
+        url "http://repo.maven.apache.org/maven2"
+    }
+}
+
+dependencies {
+    testCompile 'junit:junit:4.11'
+    compile 'io.swagger:swagger-parser:1.0.24'
+    compile 'io.swagger:swagger-compat-spec-parser:1.0.29'
+    compile 'io.swagger:swagger-models:1.5.10'
+
+
+
+}
