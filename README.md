@@ -1,21 +1,20 @@
 # RecursiveSwaggerSchemaParser
 Swagger schema contains nested model definitions which in turn could contain other nested models. This library is created to parse all these the nested responses for a given path and HTTP Method and store it in a HashMap.
 
-#Sample
 
-##Initialize the parser swagger json contract path:
+## Initialize the parser swagger json contract path:
 ```
 SwaggerSchemaParser swaggerSchemaParser = new SwaggerSchemaParser();
 swaggerSchemaParser.initializeParser("http://petstore.swagger.io/v2/swagger.json");
 ```
 ## Parse a response:
 
-#####Sample:
+##### Sample:
 ``` 
 HashMap<String, HashMap<String, String>> parsedResponse= swaggerSchemaParser.parseResponse("/pet/findByStatus", HttpMethod.GET,ResponseType.OK);
 ```
 
-#####parseResponse(String path, HTTPMethod httpMethod, ResponseType responseType):
+##### parseResponse(String path, HTTPMethod httpMethod, ResponseType responseType):
 
 - **_path_** 
 
