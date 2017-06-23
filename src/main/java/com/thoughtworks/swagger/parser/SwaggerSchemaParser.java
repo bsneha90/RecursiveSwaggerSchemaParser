@@ -11,7 +11,6 @@ import io.swagger.parser.SwaggerParser;
 import io.swagger.util.Json;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -20,23 +19,56 @@ import java.util.*;
 public class SwaggerSchemaParser {
     private Swagger swagger;
     private SwaggerParser swaggerParser;
-    private HashMap<String, String> parsedSchema = new HashMap<>();
+    private HashMap<String, String> parsedSchema;
+    private HashMap<String, HashMap<String, String>> parsedSchemaPerResponseType = new HashMap<>();
+
     String swaggerJsonUrl;
-    public SwaggerSchemaParser(String swaggerJsonUrl)
-            throws IOException, ParseException {
-        this.swaggerJsonUrl=swaggerJsonUrl;
+
+    public void initializeParser(String swaggerJsonUrl) {
+        this.swaggerJsonUrl = swaggerJsonUrl;
+        swaggerParser = new SwaggerParser();
+        swagger = swaggerParser.read(swaggerJsonUrl);
     }
 
     public HashMap<String, String> parseRequest(String path) {
-        return getSwaggerDefinitionsForRequest(path,swaggerJsonUrl);
+        return getSwaggerDefinitionsForRequest(path, swaggerJsonUrl);
     }
 
-    public HashMap<String, String> parseResponse(String path) throws IOException {
-        String referenceSchema = getSwaggerDefinitionsForResponse(path,swaggerJsonUrl);
-        return getReference(referenceSchema);
+    public HashMap<String, HashMap<String, String>> parseResponse(String path, HttpMethod httpMethod) throws IOException {
+        return parseResponse(path, httpMethod, ResponseType.All);
     }
 
-    private HashMap<String, String> getReference(String referenceSchema) {
+    public HashMap<String, HashMap<String, String>> parseResponse(String path, HttpMethod httpMethod, ResponseType responseType) throws IOException {
+        if (responseType == ResponseType.All) {
+            Map<String, Response> swaggerResponsesForGivenPathAndHTTPMethod = getSwaggerResponsesForGivenPathAndHTTPMethod(path, httpMethod);
+            swaggerResponsesForGivenPathAndHTTPMethod.forEach((responseStatusCode, response) -> {
+                    parsedSchemaPerResponseType.put(responseStatusCode,getParsedSchemaForResponse(response));
+            });
+        } else {
+            Response response = getPathResponseForHTTPMethodAndResponseType(path, httpMethod, responseType);
+            parsedSchemaPerResponseType.put(responseType.getCodeValue(),getParsedSchemaForResponse(response));
+        }
+        return parsedSchemaPerResponseType;
+    }
+
+    private HashMap<String, String> getParsedSchemaForResponse(Response response) {
+        String mainDefinationName = null;
+        try {
+            mainDefinationName = getMainDefinitionNameInResponse(response);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (mainDefinationName == null) {
+            HashMap<String, String> description = new HashMap<String, String>();
+            description.put("Description", response.getDescription());
+            return description;
+        } else {
+            parsedSchema = new HashMap<>();
+            return getDefinationSchema(mainDefinationName);
+        }
+    }
+
+    private HashMap<String, String> getDefinationSchema(String referenceSchema) {
 
         Model model = swagger.getDefinitions().get(referenceSchema);
         if (parsedSchema.containsKey(referenceSchema)) {
@@ -66,7 +98,7 @@ public class SwaggerSchemaParser {
                 }
             }
             if (simpleRef != null) {
-                getReference(simpleRef);
+                getDefinationSchema(simpleRef);
             }
 
         });
@@ -74,20 +106,36 @@ public class SwaggerSchemaParser {
         return parsedSchema;
     }
 
-    private String getSwaggerDefinitionsForResponse(String key,String swaggerJsonUrl) throws IOException {
-        swaggerParser = new SwaggerParser();
-        swagger = swaggerParser.read(swaggerJsonUrl);
-        Operation operation = swagger.getPaths().get(key).getOperations().get(0);
-        Property schema = operation.getResponses().get("200").getSchema();
-        String referenceSchema = ((RefProperty) schema).getSimpleRef();
-        return referenceSchema;
+    private String getMainDefinitionNameInResponse(Response response) throws IOException {
+        Property responseProperty = response.getSchema();
+        if (responseProperty == null) {
+            return null;
+        }
+
+        String definationName;
+        if (responseProperty instanceof RefProperty) {
+            definationName = ((RefProperty) responseProperty).getSimpleRef();
+        } else {
+            Property items = ((ArrayProperty) responseProperty).getItems();
+            definationName = ((RefProperty) items).getSimpleRef();
+        }
+
+        return definationName;
+    }
+
+    private Response getPathResponseForHTTPMethodAndResponseType(String path, HttpMethod httpMethod, ResponseType responseType) {
+        Operation httpOperation = swagger.getPaths().get(path).getOperationMap().get(httpMethod);
+        return httpOperation.getResponses().get(responseType.getCodeValue());
+    }
+
+    private Map<String, Response> getSwaggerResponsesForGivenPathAndHTTPMethod(String key, HttpMethod httpMethod) {
+        Operation operation = swagger.getPaths().get(key).getOperationMap().get(httpMethod);
+        return operation.getResponses();
     }
 
     private HashMap<String, String> getSwaggerDefinitionsForRequest(String key, String swaggerJsonUrl) {
-        HashMap<String,String> getParam = new HashMap<>();
+        HashMap<String, String> getParam = new HashMap<>();
 
-        swaggerParser = new SwaggerParser();
-        swagger = swaggerParser.read(swaggerJsonUrl);
         HttpMethod getOperationType = swagger.getPaths().get(key)
                 .getOperationMap().entrySet().iterator().next().getKey();
         Operation operation = swagger.getPaths().get(key).getOperations().get(0);
@@ -98,10 +146,10 @@ public class SwaggerSchemaParser {
             Parameter parameter = operationParameters.get(0);
             Model schema = ((BodyParameter) parameter).getSchema();
             referenceSchema = ((RefModel) schema).getSimpleRef();
-            return getReference(referenceSchema);
+            return getDefinationSchema(referenceSchema);
         } else {
             System.out.println("Get Method");
-            getParam.put("parameter",Json.pretty(operationParameters));
+            getParam.put("parameter", Json.pretty(operationParameters));
             return getParam;
         }
     }
