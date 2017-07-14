@@ -1,6 +1,9 @@
 package com.thoughtworks.swagger.parser;
 
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.models.*;
 import io.swagger.models.parameters.BodyParameter;
 import io.swagger.models.parameters.Parameter;
@@ -19,9 +22,9 @@ import java.util.*;
 public class SwaggerSchemaParser {
     private Swagger swagger;
     private SwaggerParser swaggerParser;
-    private HashMap<String, String> parsedSchema;
-    private HashMap<String, HashMap<String, String>> parsedSchemaPerResponseType = new HashMap<>();
-
+    private HashMap<String, JsonNode> parsedSchema;
+    private HashMap<String, HashMap<String, JsonNode>> parsedSchemaPerResponseType = new HashMap<>();
+    ObjectMapper mapper = new ObjectMapper();
     String swaggerJsonUrl;
 
     public void initializeParser(String swaggerJsonUrl) {
@@ -30,15 +33,15 @@ public class SwaggerSchemaParser {
         swagger = swaggerParser.read(swaggerJsonUrl);
     }
 
-    public HashMap<String, String> parseRequest(String path) {
+    public HashMap<String, JsonNode> parseRequest(String path) {
         return getSwaggerDefinitionsForRequest(path, swaggerJsonUrl);
     }
 
-    public HashMap<String, HashMap<String, String>> parseResponse(String path, HttpMethod httpMethod) throws IOException {
+    public HashMap<String, HashMap<String, JsonNode>> parseResponse(String path, HttpMethod httpMethod) throws IOException {
         return parseResponse(path, httpMethod, ResponseType.All);
     }
 
-    public HashMap<String, HashMap<String, String>> parseResponse(String path, HttpMethod httpMethod, ResponseType responseType) throws IOException {
+    public HashMap<String, HashMap<String, JsonNode>> parseResponse(String path, HttpMethod httpMethod, ResponseType responseType) throws IOException {
         if (responseType == ResponseType.All) {
             Map<String, Response> swaggerResponsesForGivenPathAndHTTPMethod = getSwaggerResponsesForGivenPathAndHTTPMethod(path, httpMethod);
             swaggerResponsesForGivenPathAndHTTPMethod.forEach((responseStatusCode, response) -> {
@@ -51,7 +54,7 @@ public class SwaggerSchemaParser {
         return parsedSchemaPerResponseType;
     }
 
-    private HashMap<String, String> getParsedSchemaForResponse(Response response) {
+    private HashMap<String, JsonNode> getParsedSchemaForResponse(Response response) {
         String mainDefinationName = null;
         try {
             mainDefinationName = getMainDefinitionNameInResponse(response);
@@ -59,33 +62,39 @@ public class SwaggerSchemaParser {
             e.printStackTrace();
         }
         if (mainDefinationName == null) {
-            HashMap<String, String> description = new HashMap<String, String>();
-            description.put("Description", response.getDescription());
+            HashMap<String, JsonNode> description = new HashMap<String, JsonNode>();
+            ObjectNode descriptionNode = mapper.createObjectNode();
+            descriptionNode.put("description", response.getDescription());
+            description.put("description", descriptionNode);
             return description;
         } else {
             parsedSchema = new HashMap<>();
-            return getDefinationSchema(mainDefinationName);
+            return getDefinationSchema(mainDefinationName,"Root");
         }
     }
-
-    private HashMap<String, String> getDefinationSchema(String referenceSchema) {
+    private HashMap<String, JsonNode> getDefinationSchema(String referenceSchema, String key) {
 
         Model model = swagger.getDefinitions().get(referenceSchema);
         if (parsedSchema.containsKey(referenceSchema)) {
             return null;
         }
-        parsedSchema.put(referenceSchema, Json.pretty(model));
+        try {
+            parsedSchema.put(key, mapper.readTree(Json.pretty(model)));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        Set<Property> referenceSet = new HashSet<>();
-        if (model.getProperties() != null) {
-            for (Map.Entry<String, Property> map : model.getProperties().entrySet()) {
+        HashMap<String,Property> referenceSet = new HashMap<>();
+        Map<String, Property> modelProperties = model.getProperties();
+        if (modelProperties != null) {
+            for (Map.Entry<String, Property> map : modelProperties.entrySet()) {
                 if ("ref".equals(map.getValue().getType())
                         || "array".equals(map.getValue().getType())) {
-                    referenceSet.add(map.getValue());
+                    referenceSet.put(map.getKey(),map.getValue());
                 }
             }
         }
-        referenceSet.forEach(property -> {
+        referenceSet.forEach((modelKey,property )-> {
             String simpleRef = null;
             if (property instanceof RefProperty) {
                 simpleRef = ((RefProperty) property).getSimpleRef();
@@ -98,7 +107,7 @@ public class SwaggerSchemaParser {
                 }
             }
             if (simpleRef != null) {
-                getDefinationSchema(simpleRef);
+                getDefinationSchema(simpleRef,modelKey);
             }
 
         });
@@ -133,7 +142,7 @@ public class SwaggerSchemaParser {
         return operation.getResponses();
     }
 
-    private HashMap<String, String> getSwaggerDefinitionsForRequest(String key, String swaggerJsonUrl) {
+    private HashMap<String, JsonNode> getSwaggerDefinitionsForRequest(String key, String swaggerJsonUrl) {
         HashMap<String, String> getParam = new HashMap<>();
 
         HttpMethod getOperationType = swagger.getPaths().get(key)
@@ -146,12 +155,14 @@ public class SwaggerSchemaParser {
             Parameter parameter = operationParameters.get(0);
             Model schema = ((BodyParameter) parameter).getSchema();
             referenceSchema = ((RefModel) schema).getSimpleRef();
-            return getDefinationSchema(referenceSchema);
+            return getDefinationSchema(referenceSchema,"");
         } else {
             System.out.println("Get Method");
-            getParam.put("parameter", Json.pretty(operationParameters));
-            return getParam;
+            getParam.put("", Json.pretty(operationParameters));
+            return null;
         }
     }
+
+
 
 }
