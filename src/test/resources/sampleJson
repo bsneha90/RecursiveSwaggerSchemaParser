@@ -695,7 +695,7 @@
                     "200": {
                         "description": "successful operation",
                         "schema": {
-                            "type": "string"
+                            "type": "integer"
                         },
                         "headers": {
                             "X-Rate-Limit": {

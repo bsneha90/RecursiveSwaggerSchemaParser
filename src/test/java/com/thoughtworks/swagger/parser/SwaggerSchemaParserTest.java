@@ -27,10 +27,19 @@ public class SwaggerSchemaParserTest {
     }
 
     @Test
+    public void testReponse() throws IOException {
+        HashMap<String, HashMap<String, HashMap<String, JsonNode>>> response = swaggerSchemaParser.parseResponseForAllPaths();
+        //parsedResponse = swaggerSchemaParser.parseResponse("/user/login",HttpMethod.GET);
+    }
+    @Test
     public void test() {
-        HashMap<String, JsonNode> parsedRequest = swaggerSchemaParser.parseRequest("/pet/findByStatus");
+        HashMap<String, JsonNode> parsedRequest = swaggerSchemaParser.parseRequest("/user/{username}",HttpMethod.PUT);
     }
 
+    @Test
+    public void ShouldBeAbleToParseTheReponseForObjectType(){
+
+    }
     @Test
     public void ShouldBeAbleToParseTheResponseForHTTPGetMethodAndReturnTheHaspMapForAllLinkedReferencesWithHTTPStatusOf200() throws IOException {
         parsedResponse = swaggerSchemaParser.parseResponse("/pet/findByStatus", HttpMethod.GET, ResponseType.OK);
@@ -40,7 +49,7 @@ public class SwaggerSchemaParserTest {
         JsonNode ExpectedTag = mapper.readTree("{\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"id\" : {\n      \"type\" : \"integer\",\n      \"format\" : \"int64\"\n    },\n    \"name\" : {\n      \"type\" : \"string\"\n    }\n  },\n  \"xml\" : {\n    \"name\" : \"Tag\"\n  }\n}");
         JsonNode ExpectedCatergory = mapper.readTree("{\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"id\" : {\n      \"type\" : \"integer\",\n      \"format\" : \"int64\"\n    },\n    \"name\" : {\n      \"type\" : \"string\"\n    }\n  },\n  \"xml\" : {\n    \"name\" : \"Category\"\n  }\n}");
         JsonNode ExpectedPet = mapper.readTree("{\n  \"type\" : \"object\",\n  \"required\" : [ \"name\", \"photoUrls\" ],\n  \"properties\" : {\n    \"id\" : {\n      \"type\" : \"integer\",\n      \"format\" : \"int64\"\n    },\n    \"category\" : {\n      \"$ref\" : \"#/definitions/Category\"\n    },\n    \"name\" : {\n      \"type\" : \"string\",\n      \"example\" : \"doggie\"\n    },\n    \"photoUrls\" : {\n      \"type\" : \"array\",\n      \"xml\" : {\n        \"name\" : \"photoUrl\",\n        \"wrapped\" : true\n      },\n      \"items\" : {\n        \"type\" : \"string\"\n      }\n    },\n    \"tags\" : {\n      \"type\" : \"array\",\n      \"xml\" : {\n        \"name\" : \"tag\",\n        \"wrapped\" : true\n      },\n      \"items\" : {\n        \"$ref\" : \"#/definitions/Tag\"\n      }\n    },\n    \"status\" : {\n      \"type\" : \"string\",\n      \"description\" : \"pet status in the store\",\n      \"enum\" : [ \"available\", \"pending\", \"sold\" ]\n    }\n  },\n  \"xml\" : {\n    \"name\" : \"Pet\"\n  }\n}");
-        Assert.assertEquals(ExpectedPet, parsedResponseDefinations.get("Root"));
+        Assert.assertEquals(ExpectedPet, parsedResponseDefinations.get("schema"));
         Assert.assertEquals(ExpectedCatergory, parsedResponseDefinations.get("category"));
         Assert.assertEquals(ExpectedTag, parsedResponseDefinations.get("tags"));
     }
@@ -56,7 +65,7 @@ public class SwaggerSchemaParserTest {
         JsonNode ExpectedPet = mapper.readTree("{\n  \"type\" : \"object\",\n  \"required\" : [ \"name\", \"photoUrls\" ],\n  \"properties\" : {\n    \"id\" : {\n      \"type\" : \"integer\",\n      \"format\" : \"int64\"\n    },\n    \"category\" : {\n      \"$ref\" : \"#/definitions/Category\"\n    },\n    \"name\" : {\n      \"type\" : \"string\",\n      \"example\" : \"doggie\"\n    },\n    \"photoUrls\" : {\n      \"type\" : \"array\",\n      \"xml\" : {\n        \"name\" : \"photoUrl\",\n        \"wrapped\" : true\n      },\n      \"items\" : {\n        \"type\" : \"string\"\n      }\n    },\n    \"tags\" : {\n      \"type\" : \"array\",\n      \"xml\" : {\n        \"name\" : \"tag\",\n        \"wrapped\" : true\n      },\n      \"items\" : {\n        \"$ref\" : \"#/definitions/Tag\"\n      }\n    },\n    \"status\" : {\n      \"type\" : \"string\",\n      \"description\" : \"pet status in the store\",\n      \"enum\" : [ \"available\", \"pending\", \"sold\" ]\n    }\n  },\n  \"xml\" : {\n    \"name\" : \"Pet\"\n  }\n}");
         Assert.assertEquals(ExpectedTag, parsedResponseDefinations.get("tags"));
         Assert.assertEquals(ExpectedCatergory, parsedResponseDefinations.get("category"));
-        Assert.assertEquals(ExpectedPet, parsedResponseDefinations.get("Root"));
+        Assert.assertEquals(ExpectedPet, parsedResponseDefinations.get("schema"));
     }
 
     @Test
