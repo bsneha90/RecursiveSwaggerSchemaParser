@@ -32,6 +32,9 @@ public class SwaggerParserHelper {
         }
 
         Model model = swagger.getDefinitions().get(schemaReference);
+        if(model==null){
+            System.out.println(schemaReference);
+        }
         if (schemaDefinationsForReferences.containsKey(schemaName)) {
             return null;
         }
@@ -65,6 +68,7 @@ public class SwaggerParserHelper {
 
         references.forEach((modelKey, property) -> {
             String simpleRef = null;
+            Boolean isArray = false;
             if (property instanceof RefProperty) {
                 simpleRef = ((RefProperty) property).getSimpleRef();
             } else {
@@ -81,5 +85,25 @@ public class SwaggerParserHelper {
 
         });
     }
+
+    private Model getSchemaModelForRef(String schemaReference) {
+        Model model = swagger.getDefinitions().get(schemaReference);
+        return model;
+    }
+
+    HashMap<String, JsonNode> schemaStructureForReferences;
+
+    private HashMap<String, JsonNode> getSchemaStructureWithAllReferences(String scehamReference, String schemaName) {
+        if (schemaStructureForReferences == null) {
+            schemaStructureForReferences = new HashMap<>();
+        }
+        Model model = getSchemaModelForRef(scehamReference);
+
+
+        return null;
+    }
+
+
+
 
 }
