@@ -1,4 +1,4 @@
-package com.thoughtworks.swagger.parser;
+package com.swagger.parser;
 
 import io.swagger.models.*;
 import io.swagger.models.properties.ArrayProperty;

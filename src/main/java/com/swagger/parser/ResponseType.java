@@ -1,4 +1,4 @@
-package com.thoughtworks.swagger.parser;
+package com.swagger.parser;
 
 /**
  * Created by bsneha on 19/06/17.

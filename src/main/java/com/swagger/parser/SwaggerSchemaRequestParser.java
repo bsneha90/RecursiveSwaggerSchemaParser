@@ -1,10 +1,10 @@
-package com.thoughtworks.swagger.parser;
+package com.swagger.parser;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.deploy.util.StringUtils;
 import io.swagger.models.*;
 import io.swagger.models.parameters.*;
 import io.swagger.models.properties.*;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -63,7 +63,8 @@ public class SwaggerSchemaRequestParser {
             swaggerRequestParameter.setIsRequired(isRequired);
             swaggerRequestParameter.setName(name);
             if (parameter instanceof AbstractSerializableParameter) {
-                swaggerRequestParameter.setEnumValues(((AbstractSerializableParameter) parameter).getEnumValue());
+                List parameterEnumValues = ((AbstractSerializableParameter) parameter).getEnumValue();
+                swaggerRequestParameter.setEnumValues(StringUtils.join(parameterEnumValues,","));
                 items = ((AbstractSerializableParameter) parameter).getItems();
                 if (items != null)
                     swaggerSchema.setItemsType(items.getType());

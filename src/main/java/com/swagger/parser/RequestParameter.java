@@ -1,6 +1,4 @@
-package com.thoughtworks.swagger.parser;
-
-import java.util.List;
+package com.swagger.parser;
 
 public class RequestParameter{
     public String getParameterIn() {
@@ -43,14 +41,14 @@ public class RequestParameter{
 
     private String name;
 
-    public List<Object> getEnumValues() {
+    public String getEnumValues() {
         return enumValues;
     }
 
-    public void setEnumValues(List<Object> enumValues) {
+    public void setEnumValues(String enumValues) {
         this.enumValues = enumValues;
     }
 
-    private List<Object> enumValues;
+    private String enumValues;
 
 }

@@ -1,4 +1,4 @@
-package com.thoughtworks.swagger.parser;
+package com.swagger.parser;
 
 import com.fasterxml.jackson.databind.JsonNode;
 

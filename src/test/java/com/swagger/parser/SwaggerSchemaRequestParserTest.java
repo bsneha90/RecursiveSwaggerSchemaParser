@@ -1,11 +1,11 @@
-package com.thoughtworks.swagger.parser;
+package com.swagger.parser;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.deploy.util.StringUtils;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Swagger;
 import io.swagger.parser.SwaggerParser;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

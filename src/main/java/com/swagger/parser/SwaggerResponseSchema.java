@@ -1,4 +1,4 @@
-package com.thoughtworks.swagger.parser;
+package com.swagger.parser;
 
 import java.util.HashMap;
 

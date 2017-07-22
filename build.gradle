@@ -4,6 +4,24 @@ version '1.0-SNAPSHOT'
 apply plugin: 'java'
 
 sourceCompatibility = 1.8
+tasks.withType(JavaCompile) {
+    sourceCompatibility = "1.8"
+    targetCompatibility = "1.8"
+    options.deprecation = true
+    options.encoding = 'UTF-8'
+    options.compilerArgs << "-Xlint:unchecked"
+}
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'Gradle Jar',
+                'Implementation-Version': version,
+                'Main-Class': 'com.swagger.parser'
+    }
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
 
 repositories {
     jcenter()
@@ -17,7 +35,5 @@ dependencies {
     compile 'io.swagger:swagger-parser:1.0.24'
     compile 'io.swagger:swagger-compat-spec-parser:1.0.29'
     compile 'io.swagger:swagger-models:1.5.10'
-
-
-
+    compile group: 'commons-lang', name: 'commons-lang', version: '2.3'
 }
