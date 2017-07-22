@@ -30,7 +30,7 @@ public class SwaggerSchemaParser {
         swaggerParserHelper= new SwaggerParserHelper(swagger);
     }
 
-    public HashMap<String, HashMap<String, SwaggerSchema>> parseResponseForAllPaths() {
+    public HashMap<String, SwaggerResponseSchema> parseResponseForAllPaths() {
        return new SwaggerSchemaResponseParser(swagger).parseResponseForAllPaths();
     }
 
@@ -43,11 +43,11 @@ public class SwaggerSchemaParser {
         return new SwaggerSchemaRequestParser(swagger).parseRequest(path,httpMethod);
     }
 
-    public HashMap<String, SwaggerSchema> parseResponse(String path, HttpMethod httpMethod) throws IOException {
+    public SwaggerResponseSchema parseResponse(String path, HttpMethod httpMethod) throws IOException {
         return new SwaggerSchemaResponseParser(swagger).parseReponseForGivenPathHTTPMethodAndAllResponseType(path, httpMethod);
     }
 
-    public HashMap<String, SwaggerSchema> parseResponse(String path, HttpMethod httpMethod, ResponseType responseType) throws IOException {
+    public SwaggerResponseSchema parseResponse(String path, HttpMethod httpMethod, ResponseType responseType) throws IOException {
        return new SwaggerSchemaResponseParser(swagger).parseReponseForGivenPathHTTPMethodAndResponseType(path, httpMethod,responseType);
     }
 

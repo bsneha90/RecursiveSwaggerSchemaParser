@@ -22,22 +22,33 @@ public class SwaggerSchemaResponseParser {
         this.swagger = swagger;
     }
 
-    public HashMap<String, HashMap<String, SwaggerSchema>> parseResponseForAllPaths() {
+    public HashMap<String, SwaggerResponseSchema> parseResponseForAllPaths() {
         Map<String, Path> paths = swagger.getPaths();
-        HashMap<String, HashMap<String, SwaggerSchema>> responses = new HashMap<>();
+        HashMap<String, SwaggerResponseSchema> responses = new HashMap<>();
         paths.forEach((path, methods) -> {
             Map<HttpMethod, Operation> operationMap = methods.getOperationMap();
             operationMap.forEach(((httpMethod, operation) -> {
-                HashMap<String, SwaggerSchema> response = parseReponseForGivenPathHTTPMethodAndAllResponseType(path, httpMethod);
+                SwaggerResponseSchema response = parseReponseForGivenPathHTTPMethodAndAllResponseType(path, httpMethod);
                 responses.put(httpMethod.name() + path, response);
             }));
         });
         return responses;
     }
 
-    public HashMap<String, SwaggerSchema> parseReponseForGivenPathHTTPMethodAndResponseType(String path, HttpMethod httpMethod, ResponseType responseType) {
+    public SwaggerResponseSchema parseReponseForGivenPathHTTPMethodAndResponseType(String path, HttpMethod httpMethod, ResponseType responseType) {
         HashMap<String, SwaggerSchema> swaggerStructurePerReponseType = new HashMap<>();
-        Map<String, Response> responses = getResponseForGivenHTTPMethodAndPath(path, httpMethod, responseType);
+        Path swaggerPath = swagger.getPaths().get(path);
+        SwaggerResponseSchema swaggerResponseSchema = new SwaggerResponseSchema();
+        if(swaggerPath==null){
+            swaggerResponseSchema.setErrorMessage(Constants.INCORRECT_PATH);
+            return swaggerResponseSchema;
+        }
+        Operation httpOperation = swaggerPath.getOperationMap().get(httpMethod);
+        if(httpOperation ==null){
+            swaggerResponseSchema.setErrorMessage(Constants.INCORRECT_HTTP_MTHHOD);
+            return swaggerResponseSchema;
+        }
+        Map<String, Response> responses =  httpOperation.getResponses();
         if (ResponseType.All == responseType) {
             responses.forEach((responseCode, response) -> {
                 SwaggerSchema swaggerStructureForReponse = null;
@@ -58,10 +69,12 @@ public class SwaggerSchemaResponseParser {
             }
             swaggerStructurePerReponseType.put(responseCode, swaggerStructureForReponse);
         }
-        return swaggerStructurePerReponseType;
+
+        swaggerResponseSchema.setSwaggerStructurePerReponseType(swaggerStructurePerReponseType);
+        return swaggerResponseSchema;
     }
 
-    public HashMap<String, SwaggerSchema> parseReponseForGivenPathHTTPMethodAndAllResponseType(String path, HttpMethod httpMethod) {
+    public SwaggerResponseSchema parseReponseForGivenPathHTTPMethodAndAllResponseType(String path, HttpMethod httpMethod) {
         return parseReponseForGivenPathHTTPMethodAndResponseType(path, httpMethod, ResponseType.All);
     }
 
@@ -83,13 +96,6 @@ public class SwaggerSchemaResponseParser {
         }
         return swaggerSchema;
     }
-
-
-    private Map<String, Response> getResponseForGivenHTTPMethodAndPath(String path, HttpMethod httpMethod, ResponseType responseType) {
-        Operation httpOperation = swagger.getPaths().get(path).getOperationMap().get(httpMethod);
-        return httpOperation.getResponses();
-    }
-
 
     private String getMainDefinitionNameInResponse(Response response) throws IOException {
         Property responseProperty = response.getSchema();

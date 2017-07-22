@@ -40,7 +40,16 @@ public class SwaggerSchemaRequestParser {
     private SwaggerRequestSchema getSwaggerDefinitionsForRequest(String key, HttpMethod httpMethod) {
         SwaggerRequestSchema swaggerRequestSchema = new SwaggerRequestSchema();
 
-        Operation operation = swagger.getPaths().get(key).getOperationMap().get(httpMethod);
+        Path path = swagger.getPaths().get(key);
+        if (path == null) {
+            swaggerRequestSchema.setErrorMessage(Constants.INCORRECT_PATH);
+            return swaggerRequestSchema;
+        }
+        Operation operation = path.getOperationMap().get(httpMethod);
+        if(operation == null){
+            swaggerRequestSchema.setErrorMessage(Constants.INCORRECT_HTTP_MTHHOD);
+            return swaggerRequestSchema;
+        }
         List<Parameter> operationParameters = operation.getParameters();
 
         operationParameters.forEach(parameter -> {
@@ -117,7 +126,7 @@ public class SwaggerSchemaRequestParser {
             } else if (parameter instanceof BodyParameter) {
                 BodyParameter qp = ((BodyParameter) parameter);
                 Model schema = qp.getSchema();
-                String simpleRef="";
+                String simpleRef = "";
                 if (schema instanceof RefModel) {
                     swaggerSchema.setType("ref");
                     simpleRef = ((RefModel) schema).getSimpleRef();

@@ -15,5 +15,15 @@ public class SwaggerRequestSchema {
     public SwaggerRequestSchema() {
         this.parameters = new ArrayList<>();
     }
+
+    public String getErrorMessage() {
+        return ErrorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        ErrorMessage = errorMessage;
+    }
+
+    private String ErrorMessage;
 }
 

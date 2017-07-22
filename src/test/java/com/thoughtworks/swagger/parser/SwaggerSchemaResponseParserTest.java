@@ -39,7 +39,7 @@ public class SwaggerSchemaResponseParserTest {
 
     @Test
     public void shouldBeAbleToParseResponseForGivenHTTPMethodAndAllResponseTypes() throws IOException {
-        HashMap<String, SwaggerSchema> parsedResponse = swaggerSchemaParser.parseReponseForGivenPathHTTPMethodAndAllResponseType("/pet/findByStatus", HttpMethod.GET);
+        HashMap<String, SwaggerSchema> parsedResponse = swaggerSchemaParser.parseReponseForGivenPathHTTPMethodAndAllResponseType("/pet/findByStatus", HttpMethod.GET).getSwaggerStructurePerReponseType();
         Assert.assertEquals(parsedResponse.size(), 2);
         Assert.assertNotNull(parsedResponse.get(ResponseType.OK.getCodeValue()));
         Assert.assertNotNull(parsedResponse.get(ResponseType.BAD_REQUEST.getCodeValue()));
@@ -47,14 +47,14 @@ public class SwaggerSchemaResponseParserTest {
 
     @Test
     public void shouldBeAbleToParseResponseForGivenHTTPMethodAndResponseTypes() throws IOException {
-        HashMap<String, SwaggerSchema> parsedResponse = swaggerSchemaParser.parseReponseForGivenPathHTTPMethodAndResponseType("/pet/findByStatus", HttpMethod.GET, ResponseType.OK);
+        HashMap<String, SwaggerSchema> parsedResponse = swaggerSchemaParser.parseReponseForGivenPathHTTPMethodAndResponseType("/pet/findByStatus", HttpMethod.GET, ResponseType.OK).getSwaggerStructurePerReponseType();
         Assert.assertEquals(parsedResponse.size(), 1);
         Assert.assertNotNull(parsedResponse.get(ResponseType.OK.getCodeValue()));
     }
 
     @Test
     public void ShouldBeAbleToParseAllPathsWithAllHTTPMethods() {
-        HashMap<String, HashMap<String, SwaggerSchema>> parsedResponse = swaggerSchemaParser.parseResponseForAllPaths();
+        HashMap<String, SwaggerResponseSchema> parsedResponse = swaggerSchemaParser.parseResponseForAllPaths();
         Set<String> parsedPaths = parsedResponse.keySet();
         String paths = "GET/store/order/{orderId},DELETE/store/order/{orderId},DELETE/user/{username},POST/user/createWithArray,PUT/user/{username},POST/user/createWithList,PUT/pet,GET/store/inventory,GET/user/{username},POST/pet/{petId},POST/pet/{petId}/uploadImage,POST/store/order,POST/pet,POST/user,GET/pet/{petId},GET/pet/findByStatus,GET/user/logout,DELETE/pet/{petId},GET/pet/findByTags,GET/user/login";
         Assert.assertEquals(parsedResponse.size(), 20);
@@ -63,7 +63,7 @@ public class SwaggerSchemaResponseParserTest {
 
     @Test
     public void shouldBeAbleToParseResponseWithSchemaAsSimpleRef() {
-        HashMap<String, SwaggerSchema> parsedResponse = swaggerSchemaParser.parseReponseForGivenPathHTTPMethodAndResponseType("/pet/{petId}", HttpMethod.GET, ResponseType.OK);
+        HashMap<String, SwaggerSchema> parsedResponse = swaggerSchemaParser.parseReponseForGivenPathHTTPMethodAndResponseType("/pet/{petId}", HttpMethod.GET, ResponseType.OK).getSwaggerStructurePerReponseType();
         Assert.assertEquals(parsedResponse.size(), 1);
         SwaggerSchema swaggerSchema = parsedResponse.get(ResponseType.OK.getCodeValue());
         Assert.assertNotNull(swaggerSchema);
@@ -80,7 +80,7 @@ public class SwaggerSchemaResponseParserTest {
 
     @Test
     public void shouldBeAbleToParseResponseWithSchemaAsArrayRef() {
-        HashMap<String, SwaggerSchema> parsedResponse = swaggerSchemaParser.parseReponseForGivenPathHTTPMethodAndResponseType("/pet/findByStatus", HttpMethod.GET, ResponseType.OK);
+        HashMap<String, SwaggerSchema> parsedResponse = swaggerSchemaParser.parseReponseForGivenPathHTTPMethodAndResponseType("/pet/findByStatus", HttpMethod.GET, ResponseType.OK).getSwaggerStructurePerReponseType();
         Assert.assertEquals(parsedResponse.size(), 1);
         SwaggerSchema swaggerSchema = parsedResponse.get(ResponseType.OK.getCodeValue());
         Assert.assertNotNull(swaggerSchema);
@@ -97,7 +97,7 @@ public class SwaggerSchemaResponseParserTest {
 
     @Test
     public void shouldBeAbleToParseResponseWithSchemaContainingOnlyDescription() {
-        HashMap<String, SwaggerSchema> parsedResponse = swaggerSchemaParser.parseReponseForGivenPathHTTPMethodAndResponseType("/pet/findByStatus", HttpMethod.GET, ResponseType.BAD_REQUEST);
+        HashMap<String, SwaggerSchema> parsedResponse = swaggerSchemaParser.parseReponseForGivenPathHTTPMethodAndResponseType("/pet/findByStatus", HttpMethod.GET, ResponseType.BAD_REQUEST).getSwaggerStructurePerReponseType();
         Assert.assertEquals(parsedResponse.size(), 1);
         SwaggerSchema swaggerSchema = parsedResponse.get(ResponseType.BAD_REQUEST.getCodeValue());
         Assert.assertNotNull(swaggerSchema);
@@ -109,7 +109,7 @@ public class SwaggerSchemaResponseParserTest {
 
     @Test
     public void shouldBeAbleToParseResponseWithSchemaAsOnlySimpleType() {
-        HashMap<String, SwaggerSchema> parsedResponse = swaggerSchemaParser.parseReponseForGivenPathHTTPMethodAndResponseType("/user/login", HttpMethod.GET, ResponseType.OK);
+        HashMap<String, SwaggerSchema> parsedResponse = swaggerSchemaParser.parseReponseForGivenPathHTTPMethodAndResponseType("/user/login", HttpMethod.GET, ResponseType.OK).getSwaggerStructurePerReponseType();
         Assert.assertEquals(parsedResponse.size(), 1);
         SwaggerSchema swaggerSchema = parsedResponse.get(ResponseType.OK.getCodeValue());
         Assert.assertNotNull(swaggerSchema);
@@ -121,7 +121,7 @@ public class SwaggerSchemaResponseParserTest {
 
     @Test
     public void shouldBeAbleToParseResponseWithSchemaAsObjectTypeWithAdditionalProperties() {
-        HashMap<String, SwaggerSchema> parsedResponse = swaggerSchemaParser.parseReponseForGivenPathHTTPMethodAndResponseType("/store/inventory", HttpMethod.GET, ResponseType.OK);
+        HashMap<String, SwaggerSchema> parsedResponse = swaggerSchemaParser.parseReponseForGivenPathHTTPMethodAndResponseType("/store/inventory", HttpMethod.GET, ResponseType.OK).getSwaggerStructurePerReponseType();
         Assert.assertEquals(parsedResponse.size(), 1);
         SwaggerSchema swaggerSchema = parsedResponse.get(ResponseType.OK.getCodeValue());
         Assert.assertNotNull(swaggerSchema);
@@ -130,5 +130,17 @@ public class SwaggerSchemaResponseParserTest {
         Assert.assertEquals(swaggerSchema.getType(), "object");
         Assert.assertEquals(swaggerSchema.getAdditionalPropertiesType(), "integer");
     }
+    @Test
+    public void shouldReturnIncorrectPathMessageWhenPathNotFound() {
+       SwaggerResponseSchema swaggerResponseSchema= swaggerSchemaParser.parseReponseForGivenPathHTTPMethodAndAllResponseType("/not/correct",HttpMethod.GET);
+        Assert.assertEquals(swaggerResponseSchema.getErrorMessage(),Constants.INCORRECT_PATH);
 
+    }
+
+    @Test
+    public void shouldReturnIncorrectHTTPMethodMessageWhenPathIsFoundButHTTPMethodIsIncorrecr() {
+        SwaggerResponseSchema parsedRequest = swaggerSchemaParser.parseReponseForGivenPathHTTPMethodAndAllResponseType("/user/createWithList",HttpMethod.GET);
+        Assert.assertEquals(parsedRequest.getErrorMessage(),Constants.INCORRECT_HTTP_MTHHOD);
+
+    }
 }

@@ -194,7 +194,16 @@ public class SwaggerSchemaRequestParserTest {
 
 
     @Test
-    public void shouldReturnAMeaningfulMessageWhenPathNotFound() {
+    public void shouldReturnIncorrectPathMessageWhenPathNotFound() {
+        SwaggerRequestSchema parsedRequest = swaggerSchemaParser.parseRequest("/not/correct",HttpMethod.GET);
+        Assert.assertEquals(parsedRequest.getErrorMessage(),Constants.INCORRECT_PATH);
+
+    }
+
+    @Test
+    public void shouldReturnIncorrectHTTPMethodMessageWhenPathIsFoundButHTTPMethodIsIncorrecr() {
+        SwaggerRequestSchema parsedRequest = swaggerSchemaParser.parseRequest("/user/createWithList",HttpMethod.GET);
+        Assert.assertEquals(parsedRequest.getErrorMessage(),Constants.INCORRECT_HTTP_MTHHOD);
 
     }
 }
