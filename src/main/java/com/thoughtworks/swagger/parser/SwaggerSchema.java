@@ -54,11 +54,28 @@ public class SwaggerSchema {
         this.additionalPropertiesType = additionalPropertiesType;
     }
 
+    private String enumValues;
 
+    public String getEnumValues() {
+        return enumValues;
+    }
+
+    public void setEnumValues(String enumValues) {
+        this.enumValues = enumValues;
+    }
 
     private String additionalPropertiesType;
 
     private String description;
 
+    public String getItemsType() {
+        return itemsType;
+    }
+
+    private String itemsType;
+
+    public void setItemsType(String itemsType) {
+        this.itemsType = itemsType;
+    }
 }
 

@@ -1,5 +1,7 @@
 package com.thoughtworks.swagger.parser;
 
+import java.util.List;
+
 public class RequestParameter{
     public String getParameterIn() {
         return parameterIn;
@@ -25,6 +27,8 @@ public class RequestParameter{
         this.swaggerSchema = swaggerSchema;
     }
 
+
+
     private String parameterIn;
     private Boolean isRequired;
     private SwaggerSchema swaggerSchema;
@@ -38,5 +42,15 @@ public class RequestParameter{
     }
 
     private String name;
+
+    public List<Object> getEnumValues() {
+        return enumValues;
+    }
+
+    public void setEnumValues(List<Object> enumValues) {
+        this.enumValues = enumValues;
+    }
+
+    private List<Object> enumValues;
 
 }
