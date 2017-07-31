@@ -18,12 +18,14 @@ public class SwaggerSchemaParser {
     private Swagger swagger;
     private SwaggerParser swaggerParser;
     private HashMap<String, JsonNode> parsedSchema;
-    private HashMap<String, HashMap<String, JsonNode>> parsedSchemaPerResponseType = new HashMap<>();
-    ObjectMapper mapper = new ObjectMapper();
+    private HashMap<String, HashMap<String, JsonNode>> parsedSchemaPerResponseType;
+    ObjectMapper mapper;
     SwaggerParserHelper swaggerParserHelper;
     String swaggerJsonUrl;
 
     public void initializeParser(String swaggerJsonUrl) {
+        parsedSchemaPerResponseType = new HashMap<>();
+        mapper = new ObjectMapper();
         this.swaggerJsonUrl = swaggerJsonUrl;
         swaggerParser = new SwaggerParser();
         swagger = swaggerParser.read(swaggerJsonUrl);

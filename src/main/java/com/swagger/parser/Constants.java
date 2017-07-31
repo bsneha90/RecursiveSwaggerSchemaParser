@@ -6,6 +6,6 @@ package com.swagger.parser;
 public class Constants {
 
     public static final String INCORRECT_PATH  = "Path not found in specification";
-
-    public static final String INCORRECT_HTTP_MTHHOD ="HTTP method is inccorect" ;
+    public static final String INCORRECT_HTTP_MTHHOD ="HTTP method is incorrect" ;
+    public static final String INCORRECT_RESPONSE_TYPE ="Response type is incorrect" ;
 }

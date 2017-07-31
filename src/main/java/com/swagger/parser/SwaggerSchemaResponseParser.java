@@ -39,16 +39,16 @@ public class SwaggerSchemaResponseParser {
         HashMap<String, SwaggerSchema> swaggerStructurePerReponseType = new HashMap<>();
         Path swaggerPath = swagger.getPaths().get(path);
         SwaggerResponseSchema swaggerResponseSchema = new SwaggerResponseSchema();
-        if(swaggerPath==null){
+        if (swaggerPath == null) {
             swaggerResponseSchema.setErrorMessage(Constants.INCORRECT_PATH);
             return swaggerResponseSchema;
         }
         Operation httpOperation = swaggerPath.getOperationMap().get(httpMethod);
-        if(httpOperation ==null){
+        if (httpOperation == null) {
             swaggerResponseSchema.setErrorMessage(Constants.INCORRECT_HTTP_MTHHOD);
             return swaggerResponseSchema;
         }
-        Map<String, Response> responses =  httpOperation.getResponses();
+        Map<String, Response> responses = httpOperation.getResponses();
         if (ResponseType.All == responseType) {
             responses.forEach((responseCode, response) -> {
                 SwaggerSchema swaggerStructureForReponse = null;
@@ -63,7 +63,12 @@ public class SwaggerSchemaResponseParser {
             String responseCode = responseType.getCodeValue();
             SwaggerSchema swaggerStructureForReponse = null;
             try {
-                swaggerStructureForReponse = getSchemaStructureFromResponse(responses.get(responseCode));
+                Response response = responses.get(responseCode);
+                if (response == null) {
+                    swaggerResponseSchema.setErrorMessage(Constants.INCORRECT_RESPONSE_TYPE);
+                    return swaggerResponseSchema;
+                }
+                swaggerStructureForReponse = getSchemaStructureFromResponse(response);
             } catch (IOException e) {
                 e.printStackTrace();
             }
